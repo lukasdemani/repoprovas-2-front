@@ -10,11 +10,11 @@ interface UserData {
 }
 
 interface AddFormData {
-  title: string;
-  file: string;
-  category: string;
-  discipline: string;
-  teacher: string;
+  name: string;
+  pdfUrl: string;
+  categoryId: number;
+  disciplineId: number;
+  teacherId: number;
 }
 
 function getConfig(token: string) {
@@ -101,7 +101,6 @@ async function getCategories(token: string) {
 }
 
 async function addTest(addTestData: AddFormData) {
-  console.log(addTestData)
   return baseAPI.post("/tests/add", addTestData);
 }
 

@@ -26,6 +26,7 @@ function Disciplines() {
   const { token } = useAuth();
   const [terms, setTerms] = useState<TestByDiscipline[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [searchText, setSearchText] = useState<string>();
 
   useEffect(() => {
     async function loadPage() {
@@ -39,11 +40,21 @@ function Disciplines() {
     loadPage();
   }, [token]);
 
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setSearchText(e.target.value);
+    console.log(e.target.value)
+  }
+
   return (
     <>
       <TextField
+        name="searchBox"
         sx={{ marginX: "auto", marginBottom: "25px", width: "450px" }}
         label="Pesquise por disciplina"
+        type="text"
+        variant="outlined"
+        onChange={handleInputChange}
+        value={searchText}
       />
       <Divider sx={{ marginBottom: "35px" }} />
       <Box

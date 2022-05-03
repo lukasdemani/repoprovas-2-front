@@ -5,7 +5,12 @@ import {
   Divider,
   TextField,
   Typography,
-  Autocomplete
+  Autocomplete,
+  MenuItem,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
+  FormControl
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
@@ -46,11 +51,11 @@ const styles = {
   };
 
 interface FormData {
-    title: string;
-    file: string;
-    category: string;
-    discipline: string;
-    teacher: string;
+    name: string;
+    pdfUrl: string;
+    categoryId: number;
+    disciplineId: number;
+    teacherId: number;
   }
 
 function Add() {
@@ -64,11 +69,11 @@ function Add() {
 
   const { setMessage } = useAlert();
   const [formData, setFormData] = useState<FormData>({
-    title: "",
-    file: "",
-    category: "",
-    discipline: "",
-    teacher: ""
+    name: "",
+    pdfUrl: "",
+    categoryId: 0,
+    disciplineId: 0,
+    teacherId: 0
   });
 
   useEffect(() => {
@@ -85,12 +90,14 @@ function Add() {
   }, [token]);
 
 
-  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setFormData({ ...formData, [event.target.name]: event.target.value });
+  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
-  function handleTest (e: React.ChangeEvent<HTMLInputElement>) {
-    console.log()
+  function handleSelectChange (e: SelectChangeEvent<number>) {
+      console.log(e.target.value)
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    console.log(formData)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -98,20 +105,20 @@ function Add() {
     setMessage(null);
     console.log(formData)
     if (
-      !formData?.title ||
-      !formData?.file ||
-      !formData?.category ||
-      !formData?.discipline ||
-      !formData?.teacher
+      !formData?.name ||
+      !formData?.pdfUrl ||
+      !formData?.categoryId ||
+      !formData?.disciplineId ||
+      !formData?.teacherId
     ) {
       setMessage({ type: "error", text: "Todos os campos são obrigatórios!" });
       return;
     }
 
-    const { title, file, category, discipline, teacher } = formData;
+    const { name, pdfUrl, categoryId, disciplineId, teacherId } = formData;
 
     try {
-      await api.addTest({ title, file, category, discipline, teacher });
+      await api.addTest({ name, pdfUrl, categoryId, disciplineId, teacherId });
       setMessage({ type: "success", text: "Prova adicionada com sucesso!" });
       navigate("/");
     } catch (error: Error | AxiosError | any) {
@@ -170,73 +177,65 @@ function Add() {
 
         <Form onSubmit={handleSubmit}>
         <TextField
-          name="title"
+          name="name"
           sx={styles.input}
           label="Título da prova"
           type="text"
           variant="outlined"
           onChange={handleInputChange}
-          value={formData.title}
+          value={formData.name}
         />
         <TextField
-          name="file"
+          name="pdfUrl"
           sx={styles.input}
           label="PDF da prova"
           type="text"
           variant="outlined"
           onChange={handleInputChange}
-          value={formData.file}
+          value={formData.pdfUrl}
         />
+
+          <FormControl fullWidth>
+            <InputLabel>Categoria</InputLabel>
+            <Select
+                sx={styles.input}
+                value={formData.categoryId}
+                label="Categoria"
+                onChange={handleSelectChange}
+                name='categoryId'
+            >
+                {categories.map((category) => <MenuItem value={category.id}>{category.name}</MenuItem>)}
+                
+            </Select>
+            </FormControl>
+            <FormControl fullWidth>
+            <InputLabel>Disciplina</InputLabel>
+            <Select
+                sx={styles.input}
+                value={formData.disciplineId}
+                label="Disciplina"
+                onChange={handleSelectChange}
+                name='disciplineId'
+            >
+                {teachersDisciplines.map((item) => <MenuItem value={item.discipline.id}>{item.discipline.name}</MenuItem>)}
+                
+            </Select>
+            </FormControl>
        
-        <Autocomplete
-            options={categories.map((category) => category.name)}
-            sx={styles.input}
-            //value={formData.category}
-            //onInputChange={handleInputChange}
-            //inputValue='p1'
-            //onInputChange={handleInputChange}
-            //nputValue={option}
-            renderInput={(params) => 
-                <TextField 
-                    {...params}
-                    label="Categoria" 
-                    type="text"
-                    name="category"
-                    //onChange={handleInputChange}
-                    // value={formData.category}
-                    />}
-                />
-        <Autocomplete
-            disablePortal
-            id="discipline"
-            options={teachersDisciplines.map((item) => item.discipline.name)}
-            sx={styles.input}
-            renderInput={(params) => 
-                <TextField 
-                    {...params} 
-                    label="Disciplina" 
-                    name="discipline"
-                    type="text"
-                    onChange={handleInputChange}
-                    value={formData.discipline}/>}
-        />
-        <Autocomplete
-            disablePortal
-            id="teacher"
-            options={teachersDisciplines.map((item) => item.teacher)}
-            getOptionLabel={(option) => option.name}
-
-
-            sx={styles.input}
-            renderInput={(params) => 
-                <TextField 
-                    {...params} 
-                    label="Pessoa instrutora" 
-                    name="teacher"
-                    type="text"
-                    onChange={handleInputChange}
-                    value={formData.teacher}/>}
-        />
+            <FormControl fullWidth>
+            <InputLabel>Pessoa instrutora</InputLabel>
+            <Select
+                sx={styles.input}
+                value={formData.teacherId}
+                label="Pessoa Instrutora"
+                onChange={handleSelectChange}
+                name='teacherId'
+            >
+                {teachersDisciplines.map((item) => <MenuItem value={item.teacher.id}>{item.teacher.name}</MenuItem>)}
+                
+            </Select>
+            </FormControl>
+       
         <Box sx={styles.actionsContainer}>
           <Button sx={{ width: "100%" }} variant="contained" type="submit">
             Adicionar
