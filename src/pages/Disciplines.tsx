@@ -48,7 +48,7 @@ function Disciplines() {
       if (!token) return;
       const { data: searchData } = await api.searchByDiscipline(searchText, token);
       setTests(searchData.tests)
-      navigate(`/app/pesquisa?${searchText}`)
+      navigate(`/app/pesquisa?key=${searchText}`)
     }
   }  
 

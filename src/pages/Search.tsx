@@ -22,23 +22,25 @@ import api, {
   Test,
   TestByDiscipline,
 } from "../services/api";
+import { useSearchParams } from "react-router-dom";
 
 function Search() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [terms, setTerms] = useState<TestByDiscipline[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [searchText, setSearchText] = useState<string>("");
+  const [searchText, setSearchText] = useState("");
   const [tests, setTests] = useState<SearchByDiscipline[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+    
 
   useEffect(() => {
     async function loadPage() {
-      if (!token) return;
-
-      const { data: testsData } = await api.getTestsByDiscipline(token);
-      setTerms(testsData.tests);
-      const { data: categoriesData } = await api.getCategories(token);
-      setCategories(categoriesData.categories);
+        const key = searchParams.get("key")
+        if (!token || !key) return;
+        setSearchText(key)
+      const { data: searchData } = await api.searchByDiscipline(key, token);
+      setTests(searchData.tests)
     }
     loadPage();
   }, [token]);
@@ -47,8 +49,8 @@ function Search() {
     if (e.key === 'Enter'){ 
       if (!token) return;
       const { data: searchData } = await api.searchByDiscipline(searchText, token);
-      console.log(searchData.tests)
       setTests(searchData.tests)
+      console.log(searchData.tests)
     }
   }  
 
@@ -99,143 +101,32 @@ function Search() {
             Adicionar
           </Button>
         </Box>
-        <TermsAccordions categories={categories} terms={terms} />
+        <DisciplinesAccordions disciplines={tests} />
       </Box>
     </>
   );
 }
 
-interface TermsAccordionsProps {
-  categories: Category[];
-  terms: TestByDiscipline[];
+interface DisciplinesAccordionsProps {
+  disciplines: SearchByDiscipline[];
 }
 
-function TermsAccordions({ categories, terms }: TermsAccordionsProps) {
+function DisciplinesAccordions({ disciplines }: DisciplinesAccordionsProps) {
   return (
     <Box sx={{ marginTop: "50px" }}>
-      {terms.map((term) => (
-        <Accordion sx={{ backgroundColor: "#FFF" }} key={term.id}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography fontWeight="bold">{term.number} Período</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <DisciplinesAccordions
-              categories={categories}
-              disciplines={term.disciplines}
-            />
-          </AccordionDetails>
-        </Accordion>
-      ))}
-    </Box>
-  );
-}
-
-interface DisciplinesAccordionsProps {
-  categories: Category[];
-  disciplines: Discipline[];
-}
-
-function DisciplinesAccordions({
-  categories,
-  disciplines,
-}: DisciplinesAccordionsProps) {
-  if (disciplines.length === 0)
-    return <Typography>Nenhuma prova para esse período...</Typography>;
-
-  return (
-    <>
       {disciplines.map((discipline) => (
-        <Accordion
-          sx={{ backgroundColor: "#FFF", boxShadow: "none" }}
-          key={discipline.id}
-        >
+        <Accordion sx={{ backgroundColor: "#FFF" }} key={discipline.id}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography fontWeight="bold">{discipline.name}</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Categories
-              categories={categories}
-              teachersDisciplines={discipline.teacherDisciplines}
-            />
+              {discipline.teacherDisciplines.map((item) => 
+                item.tests.map((test) => 
+                    test.name))}
           </AccordionDetails>
         </Accordion>
       ))}
-    </>
-  );
-}
-
-interface CategoriesProps {
-  categories: Category[];
-  teachersDisciplines: TeacherDisciplines[];
-}
-
-function Categories({ categories, teachersDisciplines }: CategoriesProps) {
-  if (teachersDisciplines.length === 0)
-    return <Typography>Nenhuma prova para essa disciplina...</Typography>;
-
-  return (
-    <>
-      {categories
-        .filter(doesCategoryHaveTests(teachersDisciplines))
-        .map((category) => (
-          <Box key={category.id}>
-            <Typography fontWeight="bold">{category.name}</Typography>
-            <TeachersDisciplines teachersDisciplines={teachersDisciplines} />
-          </Box>
-        ))}
-    </>
-  );
-}
-
-interface TeacherDisciplineProps {
-  teachersDisciplines: TeacherDisciplines[];
-}
-
-function doesCategoryHaveTests(teachersDisciplines: TeacherDisciplines[]) {
-  return (category: Category) =>
-    teachersDisciplines.filter((teacherDiscipline) =>
-      testOfThisCategory(teacherDiscipline, category)
-    ).length > 0;
-}
-
-function testOfThisCategory(
-  teacherDiscipline: TeacherDisciplines,
-  category: Category
-) {
-  return teacherDiscipline.tests.some(
-    (test) => test.category.id === category.id
-  );
-}
-
-function TeachersDisciplines({ teachersDisciplines }: TeacherDisciplineProps) {
-  const testsWithDisciplines = teachersDisciplines.map((teacherDiscipline) => ({
-    tests: teacherDiscipline.tests,
-    teacherName: teacherDiscipline.teacher.name,
-  }));
-
-  return <Tests testsWithTeachers={testsWithDisciplines} />;
-}
-
-interface TestsProps {
-  testsWithTeachers: { tests: Test[]; teacherName: string }[];
-}
-
-function Tests({ testsWithTeachers: testsWithDisciplines }: TestsProps) {
-  return (
-    <>
-      {testsWithDisciplines.map((testsWithDisciplines) =>
-        testsWithDisciplines.tests.map((test) => (
-          <Typography key={test.id} color="#878787">
-            <Link
-              href={test.pdfUrl}
-              target="_blank"
-              underline="none"
-              color="inherit"
-            >{`${test.name} (${testsWithDisciplines.teacherName})`}</Link>
-          </Typography>
-        ))
-      )}
-    </>
+    </Box>
   );
 }
 
