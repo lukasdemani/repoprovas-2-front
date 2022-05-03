@@ -23,7 +23,7 @@ import api, {
   TestByDiscipline,
 } from "../services/api";
 
-function Disciplines() {
+function Search() {
   const navigate = useNavigate();
   const { token } = useAuth();
   const [terms, setTerms] = useState<TestByDiscipline[]>([]);
@@ -47,8 +47,8 @@ function Disciplines() {
     if (e.key === 'Enter'){ 
       if (!token) return;
       const { data: searchData } = await api.searchByDiscipline(searchText, token);
+      console.log(searchData.tests)
       setTests(searchData.tests)
-      navigate(`/app/pesquisa?${searchText}`)
     }
   }  
 
@@ -239,4 +239,4 @@ function Tests({ testsWithTeachers: testsWithDisciplines }: TestsProps) {
   );
 }
 
-export default Disciplines;
+export default Search;

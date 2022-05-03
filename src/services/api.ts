@@ -79,6 +79,10 @@ export type TestByTeacher = TeacherDisciplines & {
   tests: Test[];
 };
 
+export type SearchByDiscipline = Discipline & {
+  tests: Test[];
+};
+
 async function getTestsByDiscipline(token: string) {
   const config = getConfig(token);
   return baseAPI.get<{ tests: TestByDiscipline[] }>(
@@ -104,6 +108,11 @@ async function addTest(addTestData: AddFormData) {
   return baseAPI.post("/tests/add", addTestData);
 }
 
+async function searchByDiscipline(textInput: string, token: string){
+  const config = getConfig(token);
+  return baseAPI.get<{ tests: SearchByDiscipline[] }>(`/tests/discipline?search=${textInput}`, config)
+}
+
 const api = {
   signUp,
   signIn,
@@ -111,6 +120,7 @@ const api = {
   getTestsByDiscipline,
   getTestsByTeacher,
   getCategories,
+  searchByDiscipline
 };
 
 export default api;

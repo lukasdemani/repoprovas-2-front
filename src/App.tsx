@@ -11,6 +11,7 @@ import Instructors from "./pages/Instructors";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Add from "./pages/Add";
+import Search from "./pages/Search";
 
 function App() {
   const theme = createTheme({
@@ -34,6 +35,10 @@ function App() {
                 <Route
                   path="/app/pessoas-instrutoras"
                   element={<Instructors />}
+                />
+                <Route
+                  path="/app/pesquisa"
+                  element={<Search />}
                 />
                 <Route
                   path="/app/adicionar"
